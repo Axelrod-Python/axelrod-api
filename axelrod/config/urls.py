@@ -8,12 +8,12 @@ urlpatterns = [
 ]
 
 router = DefaultRouter()
-router.register(r'strategies', StrategyViewSet, base_name='strategies')
 
 routes = {
+    'strategies': StrategyViewSet
 }
 
 for route, viewset in routes.items():
-    router.register(route, viewset)
+    router.register(route, viewset, base_name=route)
 
 urlpatterns += router.urls
