@@ -7,3 +7,4 @@ RUN apt-get update
 RUN apt-get install -y pkg-config libfreetype6-dev libpng12-dev
 RUN pip install -r requirements.txt
 ADD . /project/
+RUN python api/manage.py migrate

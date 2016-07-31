@@ -13,5 +13,5 @@ class StrategySerializer(serializers.Serializer):
 class StrategyViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        serializer = StrategySerializer(axl.all_strategies, many=True)
+        serializer = StrategySerializer(axl.strategies, many=True)
         return Response(serializer.data)
