@@ -54,5 +54,4 @@ target/
 
 .DS_Store
 .venv
-environment.py
 .vagrant/
