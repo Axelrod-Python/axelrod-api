@@ -6,8 +6,7 @@ ENV DEBUG True
 ENV DATABASE_URL postgres://postgres@db/postgres
 RUN mkdir /project
 WORKDIR /project
-ADD requirements.txt /project/
 RUN apt-get update
 RUN apt-get install -y pkg-config libfreetype6-dev libpng12-dev
-RUN pip install -r requirements.txt
 ADD . /project/
+RUN pip install -r requirements.txt
