@@ -15,7 +15,8 @@ Once Docker is installed and running, enter the following command from within th
   docker-compose up
 
 To view the browseable API, on Linux and Windows, visit http://0.0.0.0:8000
-On Mac, you will first need to find the ip address of your Docker virtual machine using:
+
+On OS X, you will first need to find the ip address of your Docker virtual machine using:
 
 .. code::
 
