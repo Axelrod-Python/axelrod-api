@@ -26,7 +26,7 @@ If successful, you should see the following messages at the end of the installat
 
 and you can view the browseable API in your browser at http://localhost:8000
 
-On OS X, if you may need to use the IP address of your docker virtual machine rather then 'localhost' To find that address, use the following command:
+On OS X, you may need to use the IP address of your docker virtual machine rather then 'localhost' To find that address, use the following command:
 
 .. code::
 
