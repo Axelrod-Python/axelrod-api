@@ -1,7 +1,7 @@
 Axelrod API
 ===========
 
-A RESTful API for the Axelrod-Python library using Django and the Django Rest Framework.
+A `RESTful <https://en.wikipedia.org/wiki/Representational_state_transfer>`_ API for the Axelrod-Python library using `Django <https://www.djangoproject.com/>`_ and the `Django Rest Framework <http://www.django-rest-framework.org/>`_.
 
 Getting Started
 ---------------
