@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+"""
+Used by Docker to run any outstanding migrations and start the web server.
+"""
 import os
 from psycopg2 import connect, OperationalError
 from time import sleep
