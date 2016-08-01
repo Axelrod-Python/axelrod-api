@@ -25,7 +25,7 @@ If successful, you should see the following messages at the end of the installat
 
 and you can view the browseable API in your browser at http://localhost:8000
 
-On OS X, you may need to use the IP address of your docker virtual machine rather then 'localhost' To find that address, use the following command:
+On OS X, if you may need to use the IP address of your docker virtual machine rather then 'localhost' To find that address, use the following command:
 
 .. code::
     docker-machine ip default
@@ -51,3 +51,5 @@ In that case, stop the containers with CTRL+C and restart with:
 .. code::
 
   docker-compose up
+
+If you installed the Kitematic tool, you should also see your new containers its list and you can start and stop them from there rather than the command line from now on.
