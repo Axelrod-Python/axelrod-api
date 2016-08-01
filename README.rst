@@ -14,12 +14,35 @@ Once Docker is installed and running, enter the following command from within th
 
   docker-compose up
 
-To view the browseable API, on Linux and Windows, visit http://0.0.0.0:8000
+This will take several minutes the first time you run it as it needs to download and install all the necessary components into a docker container.
 
-On OS X, you will first need to find the ip address of your Docker virtual machine using:
+If successful, you should see the following messages at the end of the installation and configuration:
+
+.. code::
+    web_1  | Django version 1.9.8, using settings 'config.settings'
+    web_1  | Starting development server at http://0.0.0.0:8000/
+    web_1  | Quit the server with CONTROL-C.
+
+and you can view the browseable API in your browser at http://localhost:8000
+
+Sometimes, on the first attempt, the database container is not ready when the web server starts. In that case, you may see errors similar to:
+
+.. code::
+    web_1  | django.db.utils.OperationalError: could not connect to server: Connection refused
+    web_1  |    Is the server running on host "db" and accepting
+    web_1  |    TCP/IP connections on port 5432?
+    web_1  |
+
+and
+
+.. code::
+    db_1   | LOG:  database system was shut down
+    db_1   | LOG:  MultiXact member wraparound protections are now enabled
+    db_1   | LOG:  database system is ready to accept connections
+    db_1   | LOG:  autovacuum launcher started
+
+In that case, stop the containers with CTRL+C and restart with:
 
 .. code::
 
-    docker-machine ip default
-
-and then use that address in place of 0.0.0.0
+  docker-compose up
