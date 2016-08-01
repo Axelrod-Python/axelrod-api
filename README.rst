@@ -25,6 +25,11 @@ If successful, you should see the following messages at the end of the installat
 
 and you can view the browseable API in your browser at http://localhost:8000
 
+On OS X, you may need to use the IP address of your docker virtual machine rather then 'localhost' To find that address, use the following command:
+
+.. code::
+    docker-machine ip default
+
 Sometimes, on the first attempt, the database container is not ready when the web server starts. In that case, you may see errors similar to:
 
 .. code::
