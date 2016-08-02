@@ -126,9 +126,12 @@ STATICFILES_FINDERS = [
     # 'django.contrib.staticfiles.finders.AppDirectoriesFinder',
 ]
 # Extra places for collectstatic to find static files.
-# STATICFILES_DIRS = (
-#     os.path.join(PROJECT_ROOT, 'static'),
-# )
+STATICFILES_DIRS = (
+    ("js", os.path.join(STATIC_ROOT,'js')),
+    ("css", os.path.join(STATIC_ROOT,'css')),
+    ("images", os.path.join(STATIC_ROOT,'images')),
+    ("fonts", os.path.join(STATIC_ROOT,'fonts')),
+)
 
 # REST_FRAMEWORK = {
 #     # Use Django's standard `django.contrib.auth` permissions,
