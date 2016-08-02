@@ -14,3 +14,4 @@ python-dateutil==2.5.3
 pytz==2016.6.1
 six==1.10.0
 tqdm==3.4.0
+whitenoise==3.2
