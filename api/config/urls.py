@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
-from core.views import StrategyViewSet
+from api.core.views import StrategyViewSet
 
 
 urlpatterns = [
