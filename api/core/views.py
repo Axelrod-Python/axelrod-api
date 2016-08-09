@@ -1,4 +1,5 @@
 from rest_framework import serializers, viewsets
+from rest_framework.reverse import reverse
 from rest_framework.response import Response
 import axelrod as axl
 
@@ -8,6 +9,7 @@ def id_from_name(name):
 
 
 class StrategySerializer(serializers.Serializer):
+    url = serializers.SerializerMethodField()
     id = serializers.SerializerMethodField()
     name = serializers.CharField(max_length=200)
     description = serializers.SerializerMethodField()
@@ -16,6 +18,13 @@ class StrategySerializer(serializers.Serializer):
     def get_id(self, strategy):
         return id_from_name(strategy.name)
 
+    def get_url(self, strategy):
+        request = self.context['request']
+        return reverse(
+            viewname='strategies-detail',
+            args=[id_from_name(strategy.name)],
+            request=request)
+
     def get_description(self, strategy):
         return strategy.__doc__
 
@@ -23,12 +32,13 @@ class StrategySerializer(serializers.Serializer):
 class StrategyViewSet(viewsets.ViewSet):
 
     def list(self, request):
-        serializer = StrategySerializer(axl.strategies, many=True)
+        serializer = StrategySerializer(
+            axl.strategies, many=True, context={'request': request})
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
         strategy_dict = {
             id_from_name(s.name): s for s in axl.strategies}
         strategy = strategy_dict[id_from_name(pk)]
-        serializer = StrategySerializer(strategy)
+        serializer = StrategySerializer(strategy, context={'request': request})
         return Response(serializer.data)
