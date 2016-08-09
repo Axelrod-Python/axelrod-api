@@ -5,7 +5,11 @@ import axelrod as axl
 
 class StrategySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
+    description = serializers.SerializerMethodField()
     classifier = serializers.DictField()
+
+    def get_description(self, strategy):
+        return strategy.__doc__
 
 
 class StrategyViewSet(viewsets.ViewSet):
