@@ -28,7 +28,7 @@ class StrategyViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         strategy_dict = {
-            id_from_name(strategy.name): strategy for strategy in axl.strategies}
+            id_from_name(s.name): s for s in axl.strategies}
         strategy = strategy_dict[id_from_name(pk)]
         serializer = StrategySerializer(strategy)
         return Response(serializer.data)
