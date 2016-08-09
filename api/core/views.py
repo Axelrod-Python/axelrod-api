@@ -4,10 +4,8 @@ import axelrod as axl
 
 
 class StrategySerializer(serializers.Serializer):
-    class Meta:
-        fields = ('name',)
-
     name = serializers.CharField(max_length=200)
+    classifier = serializers.DictField()
 
 
 class StrategyViewSet(viewsets.ViewSet):
