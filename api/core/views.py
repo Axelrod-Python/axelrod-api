@@ -1,32 +1,7 @@
-from rest_framework import serializers, viewsets
-from rest_framework.reverse import reverse
+from rest_framework import viewsets
 from rest_framework.response import Response
 import axelrod as axl
-
-
-def strategy_id(strategy):
-    return strategy.name.lower().replace(' ', '')
-
-
-class StrategySerializer(serializers.Serializer):
-    url = serializers.SerializerMethodField()
-    id = serializers.SerializerMethodField()
-    name = serializers.CharField(max_length=200)
-    description = serializers.SerializerMethodField()
-    classifier = serializers.DictField()
-
-    def get_id(self, strategy):
-        return strategy_id(strategy)
-
-    def get_url(self, strategy):
-        request = self.context['request']
-        return reverse(
-            viewname='strategies-detail',
-            args=[strategy_id(strategy)],
-            request=request)
-
-    def get_description(self, strategy):
-        return strategy.__doc__
+from api.core.serializers import StrategySerializer, strategy_id
 
 
 class StrategyViewSet(viewsets.ViewSet):
