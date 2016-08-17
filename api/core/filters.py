@@ -13,7 +13,10 @@ def passes_boolean_filter(strategy, classifier, value):
 
 def passes_operator_filter(strategy, filter, value, operator):
     if isinstance(value, str):
-        filter_value = int(value)
+        if value.lower() == 'infinity':
+            filter_value = float('inf')
+        else:
+            filter_value = int(value)
     else:
         filter_value = value
 
