@@ -34,9 +34,9 @@ def passes_filterset(strategy, filterset):
     filter_types = {
         'stochastic': ('boolean', 'stochastic'),
         'long_run_time': ('boolean', 'long_run_time'),
-        'manipulates_state': ('boolean', 'stochastic'),
-        'manipulates_source': ('boolean', 'stochastic'),
-        'inspects_source': ('boolean', 'stochastic'),
+        'manipulates_state': ('boolean', 'manipulates_state'),
+        'manipulates_source': ('boolean', 'manipulates_source'),
+        'inspects_source': ('boolean', 'inspects_source'),
         'min_memory_depth': ('gte', 'memory_depth'),
         'max_memory_depth': ('lte', 'memory_depth')
     }
