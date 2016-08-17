@@ -50,10 +50,10 @@ def passes_filterset(strategy, filterset):
         elif filter_types[filter][0] == 'gte':
             passes_filters.append(
                 passes_operator_filter(
-                    strategy, filter_types[filter][1], filterset[filter], operator.le))
+                    strategy, filter_types[filter][1], filterset[filter], operator.ge))
         elif filter_types[filter][0] == 'lte':
             passes_filters.append(
                 passes_operator_filter(
-                    strategy, filter_types[filter][1], filterset[filter], operator.ge))
+                    strategy, filter_types[filter][1], filterset[filter], operator.le))
 
     return all(passes_filters)
