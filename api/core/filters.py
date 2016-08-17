@@ -13,14 +13,16 @@ def passes_boolean_filter(strategy, classifier, value):
 
 def passes_operator_filter(strategy, classifier, value, operator):
     if isinstance(value, str):
-        if value.lower() == 'infinity':
-            filter_value = float('inf')
-        else:
-            filter_value = int(value)
+        filter_value = int(value)
     else:
         filter_value = value
 
-    return operator(strategy.classifier[classifier], filter_value)
+    classifier_value = strategy.classifier[classifier]
+    if (isinstance(classifier_value, str) and
+            classifier_value.lower() == 'infinity'):
+        classifier_value = float('inf')
+
+    return operator(classifier_value, filter_value)
 
 
 def passes_in_list_filter(strategy, classifier, value):
