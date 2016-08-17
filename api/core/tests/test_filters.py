@@ -11,13 +11,20 @@ class TestStrategy(object):
 
 class TestFilters(unittest.TestCase):
 
-    def test_match_stochastic(self):
+    def test_passes_boolean_filter(self):
         test_strategy = TestStrategy()
+
+        # test that filter works with a string value
         test_filterset = {'stochastic': 'True'}
         self.assertTrue(passes_boolean_filter(
             test_strategy, test_filterset, 'stochastic'))
 
-    def test_match_params(self):
+        # test that filter works with a boolean value
+        test_filterset = {'stochastic': True}
+        self.assertTrue(passes_boolean_filter(
+            test_strategy, test_filterset, 'stochastic'))
+
+    def test_passes_filterset(self):
         test_strategy = TestStrategy()
         test_filterset = {'stochastic': 'True'}
         self.assertTrue(passes_filterset(test_strategy, test_filterset))
