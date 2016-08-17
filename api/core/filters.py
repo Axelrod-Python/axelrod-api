@@ -11,7 +11,7 @@ def passes_boolean_filter(strategy, classifier, value):
     return strategy.classifier[classifier] == filter_value
 
 
-def passes_operator_filter(strategy, filter, value, operator):
+def passes_operator_filter(strategy, classifier, value, operator):
     if isinstance(value, str):
         if value.lower() == 'infinity':
             filter_value = float('inf')
@@ -20,7 +20,11 @@ def passes_operator_filter(strategy, filter, value, operator):
     else:
         filter_value = value
 
-    return operator(strategy.classifier[filter], filter_value)
+    return operator(strategy.classifier[classifier], filter_value)
+
+
+def passes_in_list_filter(strategy, classifier, value):
+    return value in strategy.classifier[classifier]
 
 
 def passes_filterset(strategy, filterset):
@@ -41,7 +45,8 @@ def passes_filterset(strategy, filterset):
         'manipulates_source': ('boolean', 'manipulates_source'),
         'inspects_source': ('boolean', 'inspects_source'),
         'min_memory_depth': ('gte', 'memory_depth'),
-        'max_memory_depth': ('lte', 'memory_depth')
+        'max_memory_depth': ('lte', 'memory_depth'),
+        'makes_use_of': ('list', 'makes_use_of')
     }
     passes_filters = []
 
@@ -60,5 +65,9 @@ def passes_filterset(strategy, filterset):
                 passes_operator_filter(
                     strategy, filter_types[filter][1], filterset[filter],
                     operator.le))
+        elif filter_types[filter][0] == 'list':
+            passes_filters.append(
+                passes_in_list_filter(
+                    strategy, filter_types[filter][1], filterset[filter]))
 
     return all(passes_filters)
