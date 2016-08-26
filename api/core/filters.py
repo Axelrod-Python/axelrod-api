@@ -1,8 +1,9 @@
 from distutils.util import strtobool
+from collections import namedtuple
 import operator
 
 
-def passes_boolean_filter(strategy, classifier, value):
+def passes_boolean_filter(strategy, value, classifier):
     if isinstance(value, str):
         filter_value = strtobool(value)
     else:
@@ -11,7 +12,7 @@ def passes_boolean_filter(strategy, classifier, value):
     return strategy.classifier[classifier] == filter_value
 
 
-def passes_operator_filter(strategy, classifier, value, operator):
+def passes_operator_filter(strategy, value, classifier, operator):
     if isinstance(value, str):
         filter_value = int(value)
     else:
@@ -25,7 +26,7 @@ def passes_operator_filter(strategy, classifier, value, operator):
     return operator(classifier_value, filter_value)
 
 
-def passes_in_list_filter(strategy, classifier, value):
+def passes_in_list_filter(strategy, value, classifier):
     return value in strategy.classifier[classifier]
 
 
@@ -40,36 +41,41 @@ def passes_filterset(strategy, filterset):
     -------
         boolean
     """
-    filter_types = {
-        'stochastic': ('boolean', 'stochastic'),
-        'long_run_time': ('boolean', 'long_run_time'),
-        'manipulates_state': ('boolean', 'manipulates_state'),
-        'manipulates_source': ('boolean', 'manipulates_source'),
-        'inspects_source': ('boolean', 'inspects_source'),
-        'min_memory_depth': ('gte', 'memory_depth'),
-        'max_memory_depth': ('lte', 'memory_depth'),
-        'makes_use_of': ('list', 'makes_use_of')
+    FilterFunction = namedtuple('FilterFunction', 'function kwargs')
+    filter_functions = {
+        'stochastic': FilterFunction(
+            function=passes_boolean_filter,
+            kwargs={'classifier': 'stochastic'}),
+        'long_run_time': FilterFunction(
+            function=passes_boolean_filter,
+            kwargs={'classifier': 'long_run_time'}),
+        'manipulates_state': FilterFunction(
+            function=passes_boolean_filter,
+            kwargs={'classifier': 'manipulates_state'}),
+        'manipulates_source': FilterFunction(
+            function=passes_boolean_filter,
+            kwargs={'classifier': 'manipulates_source'}),
+        'inspects_source': FilterFunction(
+            function=passes_boolean_filter,
+            kwargs={'classifier': 'inspects_source'}),
+        'min_memory_depth': FilterFunction(
+            function=passes_operator_filter,
+            kwargs={'classifier': 'memory_depth', 'operator': operator.ge}),
+        'max_memory_depth': FilterFunction(
+            function=passes_operator_filter,
+            kwargs={'classifier': 'memory_depth', 'operator': operator.le}),
+        'makes_use_of': FilterFunction(
+            function=passes_in_list_filter,
+            kwargs={'classifier': 'makes_use_of'})
     }
     passes_filters = []
 
-    for filter in filterset:
-        if filter_types[filter][0] == 'boolean':
-            passes_filters.append(
-                passes_boolean_filter(
-                    strategy, filter_types[filter][1], filterset[filter]))
-        elif filter_types[filter][0] == 'gte':
-            passes_filters.append(
-                passes_operator_filter(
-                    strategy, filter_types[filter][1], filterset[filter],
-                    operator.ge))
-        elif filter_types[filter][0] == 'lte':
-            passes_filters.append(
-                passes_operator_filter(
-                    strategy, filter_types[filter][1], filterset[filter],
-                    operator.le))
-        elif filter_types[filter][0] == 'list':
-            passes_filters.append(
-                passes_in_list_filter(
-                    strategy, filter_types[filter][1], filterset[filter]))
+    for filter, filter_function in filter_functions.items():
+
+        if filterset.get(filter, None) is not None:
+            kwargs = filter_function.kwargs
+            kwargs['strategy'] = strategy
+            kwargs['value'] = filterset[filter]
+            passes_filters.append(filter_function.function(**kwargs))
 
     return all(passes_filters)
