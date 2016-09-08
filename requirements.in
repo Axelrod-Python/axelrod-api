@@ -4,3 +4,18 @@ https://control.aldryn.com/api/v1/apps/serve/aldryn-django/1.9.8.2/581bc642-ca60
 https://control.aldryn.com/api/v1/apps/serve/aldryn-sso/1.1.4/84d52292-3f02-424a-835c-b0e5fda430d7/aldryn-sso-1.1.4.tar.gz#egg=aldryn-sso==1.1.4
 https://control.aldryn.com/api/v1/apps/serve/aldryn-devsync/1.1.0/ee6faba8-7ab7-4ba7-8ee1-44013beb6fef/aldryn-devsync-1.1.0.tar.gz#egg=aldryn-devsync==1.1.0
 # </INSTALLED_ADDONS>
+Axelrod==1.6.0
+cycler==0.10.0
+dj-database-url==0.4.1
+djangorestframework==3.4.1
+hypothesis==3.4.2
+matplotlib==1.5.1
+numpy==1.11.1
+psycopg2==2.6.2
+pyparsing==2.1.1
+python-dateutil==2.5.3
+pytz==2016.6.1
+six==1.10.0
+sqlparse==0.2.1
+tqdm==3.4.0
+whitenoise==3.2

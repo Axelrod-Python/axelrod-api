@@ -16,7 +16,8 @@ aldryn_addons.settings.load(locals())
 # all django settings can be altered here
 
 INSTALLED_APPS.extend([
-    # add your project specific apps here
+    'core',
+    'rest_framework'
 ])
 
 MIDDLEWARE_CLASSES.extend([
