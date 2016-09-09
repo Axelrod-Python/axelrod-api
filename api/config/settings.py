@@ -25,11 +25,18 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = ['*']
 
+DEBUG_TOOLBAR_PATCH_SETTINGS = False
+INTERNAL_IPS = [
+    '127.0.0.1',
+    '0.0.0.0',
+    '::1'
+]
 
 # Application definition
 
 INSTALLED_APPS = [
     'api.core',
+    'debug_toolbar',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'debug_toolbar',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -130,10 +136,13 @@ STATIC_URL = '/static/'
 #     ]
 # }
 
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = [
-    '127.0.0.1',
-    '0.0.0.0',
-    '::1'
-]
 
+def show_toolbar(request):
+    if request.is_ajax():
+        return False
+
+    return bool(DEBUG)
+
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': show_toolbar
+}
