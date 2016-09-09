@@ -30,8 +30,10 @@ INTERNAL_IPS = [
     '127.0.0.1',
     '0.0.0.0',
     '::1',
-    os.environ["DOCKER_HOST"]
 ]
+
+if  "DOCKER_HOST" in os.environ:
+    INTERNAL_IPS += os.environ["DOCKER_HOST"]
 
 # Application definition
 
