@@ -6,6 +6,12 @@ from api.core.serializers import StrategySerializer, strategy_id
 
 
 def strategies(request):
+    """
+    Take the incoming request object, convert the strings in its
+    query_params dictionary into the types required by the axelrod
+    filtering function and pass the resulting dictionary into that
+    filtering function.
+    """
 
     params = request.query_params
 
