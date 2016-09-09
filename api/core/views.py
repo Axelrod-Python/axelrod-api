@@ -1,14 +1,39 @@
+from distutils.util import strtobool
 from rest_framework import viewsets
 from rest_framework.response import Response
 import axelrod as axl
 from api.core.serializers import StrategySerializer, strategy_id
-from api.core.filters import passes_filterset
 
 
 def strategies(request):
-    return [
-        s for s in axl.all_strategies
-        if passes_filterset(s, request.query_params)]
+
+    params = request.query_params
+
+    filter_types = {
+        strtobool: [
+            'stochastic',
+            'long_run_time',
+            'manipulates_state',
+            'manipulates_source',
+            'inpsects_source'
+        ],
+        int: [
+            'memory_depth',
+            'min_memory_depth',
+            'max_memory_depth'
+        ],
+    }
+
+    filterset = {
+        _filter: convert_type(params[_filter])
+        for convert_type, filters in filter_types.items()
+        for _filter in filters if _filter in params
+    }
+
+    if 'makes_use_of' in params:
+        filterset['makes_use_of'] = params.getlist('makes_use_of')
+
+    return axl.filtered_strategies(filterset)
 
 
 class StrategyViewSet(viewsets.ViewSet):
