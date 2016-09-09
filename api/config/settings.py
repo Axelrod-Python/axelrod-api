@@ -29,7 +29,8 @@ DEBUG_TOOLBAR_PATCH_SETTINGS = False
 INTERNAL_IPS = [
     '127.0.0.1',
     '0.0.0.0',
-    '::1'
+    '::1',
+    os.environ["DOCKER_HOST"]
 ]
 
 # Application definition
@@ -135,14 +136,3 @@ STATIC_URL = '/static/'
 #         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
 #     ]
 # }
-
-
-def show_toolbar(request):
-    if request.is_ajax():
-        return False
-
-    return bool(DEBUG)
-
-DEBUG_TOOLBAR_CONFIG = {
-    'SHOW_TOOLBAR_CALLBACK': show_toolbar
-}
