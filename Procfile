@@ -1,1 +1,2 @@
-web: gunicorn api.config.wsgi --log-file -
+web: aldryn-django web
+migrate: aldryn-django migrate

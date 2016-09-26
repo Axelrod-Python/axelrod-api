@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-import sys
+import os
+from aldryn_django import startup
+
 
 if __name__ == "__main__":
-    from django.core.management import execute_from_command_line
-    execute_from_command_line(sys.argv)
+    startup.manage(path=os.path.dirname(os.path.abspath(__file__)))
