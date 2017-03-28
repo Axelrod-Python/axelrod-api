@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import subprocess
 import dj_database_url
 
 # Environment specific settings from environment variables or local .env file
@@ -33,10 +34,13 @@ INTERNAL_IPS = [
 ]
 
 if "DOCKER_HOST" in os.environ:
-    INTERNAL_IPS += os.environ["DOCKER_HOST"]
+    ip = subprocess.check_output(
+        ['ip', 'addr', 'show', 'eth0'],
+        universal_newlines=True
+    ).split("inet ")[1].split("/")[0]
+    INTERNAL_IPS.append(ip)
 
 # Application definition
-
 INSTALLED_APPS = [
     'api.core',
     'debug_toolbar',
@@ -49,7 +53,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
