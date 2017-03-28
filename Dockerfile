@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.6
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE api.config.settings
 ENV SECRET_KEY r#lkao5gtpp@me&4532%!q%sj9yzg)xb-_*mlousmi&=#2r7&w
