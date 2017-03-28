@@ -1,26 +1,13 @@
-# <DOCKER_FROM>  # Warning: text inside the DOCKER_FROM tags is auto-generated. Manual changes will be overwritten.
-FROM aldryn/base-project:py3-3.18
-# </DOCKER_FROM>
-
-# <DOCKER_BUILD>  # Warning: text inside the DOCKER_BUILD tags is auto-generated. Manual changes will be overwritten.
-
-# python requirements
-# -------------------
-ENV PIP_INDEX_URL=${PIP_INDEX_URL:-https://wheels.aldryn.net/v1/aldryn-extras+pypi/aldryn-baseproject-py3/+simple/} \
-    WHEELSPROXY_URL=${WHEELSPROXY_URL:-https://wheels.aldryn.net/v1/aldryn-extras+pypi/aldryn-baseproject-py3/}
-COPY requirements.* /app/
-COPY addons-dev /app/addons-dev/
-RUN pip-reqs resolve && \
-    pip install \
-        --no-index --no-deps \
-        --requirement requirements.urls
-
-# add full sourcecode
-# -------------------
-COPY . /app
-
-# collectstatic
-# -------------
-RUN DJANGO_MODE=build python manage.py collectstatic --noinput
-
-# </DOCKER_BUILD>
+FROM python:3.5
+ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE api.config.settings
+ENV SECRET_KEY r#lkao5gtpp@me&4532%!q%sj9yzg)xb-_*mlousmi&=#2r7&w
+ENV DEBUG True
+ENV DATABASE_URL postgres://postgres@db/postgres
+ENV DOCKER_HOST $(ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+')
+RUN mkdir /project
+WORKDIR /project
+RUN apt-get update
+RUN apt-get install -y pkg-config libfreetype6-dev libpng12-dev
+ADD . /project/
+RUN pip install -r requirements.txt
