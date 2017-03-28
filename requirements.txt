@@ -3,7 +3,7 @@ cycler==0.10.0
 dj-database-url==0.4.1
 Django==1.10
 django-debug-toolbar==1.5
-djangorestframework==3.4.1
+djangorestframework==3.6.2
 gunicorn==19.6.0
 hypothesis==3.4.2
 matplotlib==1.5.1
