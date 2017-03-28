@@ -17,6 +17,7 @@ import dj_database_url
 # Environment specific settings from environment variables or local .env file
 SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = bool(os.environ.get('DEBUG', False))
+DOCKER = bool(os.environ.get('DOCKER_HOST', False))
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -26,19 +27,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ALLOWED_HOSTS = ['*']
 
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-INTERNAL_IPS = [
-    '127.0.0.1',
-    '0.0.0.0',
-    '::1',
-]
+def show_debug_toolbar(request):
+    return DOCKER and DEBUG
 
-if "DOCKER_HOST" in os.environ:
-    ip = subprocess.check_output(
-        ['ip', 'addr', 'show', 'eth0'],
-        universal_newlines=True
-    ).split("inet ")[1].split("/")[0]
-    INTERNAL_IPS.append(ip)
+DEBUG_TOOLBAR_CONFIG = {
+    'SHOW_TOOLBAR_CALLBACK': show_debug_toolbar
+}
 
 # Application definition
 INSTALLED_APPS = [
