@@ -32,4 +32,4 @@ On OS X, you may need to use the IP address of your docker virtual machine rathe
 
     docker-machine ip default
 
-If you installed the Kitematic tool, you should also see your new containers its list and you can start and stop them from there rather than the command line from now on.
+If you installed the Kitematic tool, you should also see your new containers in its list and you can start and stop them from there rather than the command line from now on.
