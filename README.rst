@@ -20,7 +20,7 @@ If successful, you should see the following messages at the end of the installat
 
 .. code::
 
-  web_1  | Django version 1.9.8, using settings 'config.settings'
+  web_1  | Django version 1.10.6, using settings 'api.config.settings'
   web_1  | Starting development server at http://0.0.0.0:8000/
   web_1  | Quit the server with CONTROL-C.
 
