@@ -12,6 +12,7 @@ class StrategySerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200)
     description = serializers.SerializerMethodField()
     classifier = serializers.SerializerMethodField()
+    params = serializers.SerializerMethodField()
 
     def get_id(self, strategy):
         return strategy_id(strategy)
@@ -31,3 +32,9 @@ class StrategySerializer(serializers.Serializer):
         if classifier['memory_depth'] == float('inf'):
             classifier['memory_depth'] = -1
         return classifier
+
+    def get_params(self, strategy):
+        params = strategy.init_params()
+        if 'memory_depth' in params and params['memory_depth'] == float('inf'):
+            params['memory_depth'] = -1
+        return params
