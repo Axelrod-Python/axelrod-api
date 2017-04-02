@@ -58,3 +58,6 @@ target/
 
 # Sublime Text Settings
 *.sublime-*
+
+# pycharm settings
+.idea
