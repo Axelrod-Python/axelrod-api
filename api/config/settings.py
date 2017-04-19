@@ -1,5 +1,4 @@
 import os
-import subprocess
 import dj_database_url
 
 # Environment specific settings from environment variables or local .env file
@@ -14,6 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 ALLOWED_HOSTS = ['*']
+
 
 def show_debug_toolbar(request):
     return DOCKER and DEBUG

@@ -5,7 +5,7 @@ import axelrod as axl
 from api.core.serializers import StrategySerializer, strategy_id
 
 
-def strategies(request):
+def filter_strategies(request):
     """
     Take the incoming request object, convert the strings in its
     query_params dictionary into the types required by the axelrod
@@ -38,7 +38,6 @@ def strategies(request):
 
     if 'makes_use_of' in params:
         filterset['makes_use_of'] = params.getlist('makes_use_of')
-
     return axl.filtered_strategies(filterset)
 
 
@@ -48,7 +47,7 @@ class StrategyViewSet(viewsets.ViewSet):
 
     def list(self, request):
         serializer = StrategySerializer(
-            strategies(request), many=True, context={'request': request})
+            filter_strategies(request), many=True, context={'request': request})
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
