@@ -3,13 +3,11 @@ from rest_framework.test import APIClient
 
 from api.core.serializers import strategy_id
 
-
 class TestStrategy(object):
 
     def __init__(self, name, classifier):
         self.name = name
         self.classifier = classifier
-
     def init_params(self):
         return {}
 
