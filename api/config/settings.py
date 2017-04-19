@@ -6,8 +6,6 @@ SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = bool(os.environ.get('DEBUG', False))
 DOCKER = bool(os.environ.get('DOCKER_HOST', False))
 
-print(SECRET_KEY)
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
