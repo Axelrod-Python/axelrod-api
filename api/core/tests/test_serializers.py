@@ -16,14 +16,13 @@ class TestStrategy(object):
         "manipulates_source": False,
         "manipulates_state": False,
     }
+    params = {'rate': 0.5}
 
     def __init__(self):
         pass
 
     def init_params(self):
-        return {
-            'rate': 0.5
-        }
+        return self.params
 
 
 class TestSerializers(TestCase):
