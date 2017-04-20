@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
-from api.core.views import StrategyViewSet
+from api.core.views import (
+    MatchViewSet,
+    StrategyViewSet,
+    TournamentViewSet,
+)
 
 
 urlpatterns = [
@@ -17,7 +21,9 @@ if settings.DEBUG:
 router = DefaultRouter()
 
 routes = {
-    'strategies': StrategyViewSet
+    'matches': MatchViewSet,
+    'strategies': StrategyViewSet,
+    'tournaments': TournamentViewSet,
 }
 
 for route, viewset in routes.items():
