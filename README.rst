@@ -36,7 +36,7 @@ If successful, you should see the following messages at the end of the installat
 
 .. code::
 
-  web_1  | Django version 1.10.6, using settings 'api.config.settings'
+  web_1  | Django version 1.11, using settings 'api.config.settings'
   web_1  | Starting development server at http://0.0.0.0:8000/
   web_1  | Quit the server with CONTROL-C.
 
@@ -60,4 +60,11 @@ Make sure you have created a .env file as above. To run all tests:
 .. code::
 
   python manage.py test --settings=api.config.test_settings
+
+With coverage:
+
+.. code:
+
+  coverage run --source='api' manage.py test --settings=api.config.test_settings
+  coverage html --omit="*/test*"
 

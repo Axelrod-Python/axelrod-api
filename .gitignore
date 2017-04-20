@@ -57,8 +57,7 @@ target/
 .venv
 .vagrant/
 
-# Sublime Text Settings
+# Code editors
 *.sublime-*
-
-# pycharm settings
 .idea
+.vscode

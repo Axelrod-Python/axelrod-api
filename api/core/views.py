@@ -1,4 +1,5 @@
 from distutils.util import strtobool
+from django.http import Http404
 from rest_framework import viewsets
 from rest_framework.response import Response
 import axelrod as axl
@@ -51,6 +52,9 @@ class StrategyViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def retrieve(self, request, pk=None):
-        strategy = self.strategies_index[pk]
+        try:
+            strategy = self.strategies_index[pk]
+        except KeyError:
+            raise Http404
         serializer = StrategySerializer(strategy, context={'request': request})
         return Response(serializer.data)
