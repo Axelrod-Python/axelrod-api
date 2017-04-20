@@ -63,7 +63,7 @@ Make sure you have created a .env file as above. To run all tests:
 
 With coverage:
 
-.. code:
+.. code::
 
   coverage run --source='api' manage.py test --settings=api.config.test_settings
   coverage html --omit="*/test*"
