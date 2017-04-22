@@ -66,15 +66,24 @@ class StrategyViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 
-class BaseTournamentView:
+class BaseGameView(viewsets.ViewSet):
     """
-
+    Base game object for ViewSets to inherit. Creates, retrieves and
+    cancels games.
     """
 
     strategies_index = {strategy_id(s): s for s in axl.strategies}
-    _not_found_error = 'Strategy {} was not found'
+    _not_found_error = 'Strategy not found: {}'
 
-    def parse_players(self, player_list):
+    def _parse_players(self, player_list):
+        """
+        convert list of player strings into list of Strategies
+
+        Parameters
+        ----------
+            player_list: list of strings
+                a list of player ids
+        """
         players = []
         for player in player_list:
             strategy = self.strategies_index[player]
@@ -82,21 +91,36 @@ class BaseTournamentView:
         return players
 
     def create(self, request):
-        data = request.data
-        serializer = self.serializer(data=data)
-        if serializer.is_valid():
-            tournament_definition = serializer.data
-            try:
-                players = self.parse_players(data['player_list'])
-            except KeyError as e:
-                return Response({'player_list': self._not_found_error.format(e.args[0])})
+        """
+        POST method
 
-            results = self.run(players, tournament_definition)
-            return Response(ResultsSerializer(results).data, 200)
+        Take in a game_definition which expects all of the
+        required parameters of the type of game, a list of
+        player strings, and starts the game.
+        """
+        serializer = self.serializer(data=request.data)
+        if serializer.is_valid():
+            game_definition = serializer.data
+
+            try:
+                players = self._parse_players(request.data['player_list'])
+                game_definition.pop('player_list')
+            except KeyError as e:
+                return Response({
+                    'player_list': [self._not_found_error.format(e.args[0])]
+                }, 400)
+
+            results = self.run(players, game_definition)
+            return Response(ResultsSerializer(results).data, 201)
         return Response(serializer.errors, 400)
 
 
-class TournamentViewSet(viewsets.ViewSet, BaseTournamentView):
+class TournamentViewSet(BaseGameView):
+    """
+    View that handles the creation and retrieval of tournaments. A
+    tournament consists of two or more players facing each other
+    in a round robin bout.
+    """
 
     serializer = TournamentSerializer
 
@@ -106,7 +130,11 @@ class TournamentViewSet(viewsets.ViewSet, BaseTournamentView):
         return tournament.play()
 
 
-class MatchViewSet(viewsets.ViewSet, BaseTournamentView):
+class MatchViewSet(BaseGameView):
+    """
+    View that handles creation and retrieval of matches. A match
+    is a 1v1 game between two players.
+    """
 
     serializer = MatchSerializer
 
@@ -114,3 +142,5 @@ class MatchViewSet(viewsets.ViewSet, BaseTournamentView):
     def run(players, definition):
         match = axl.Match(players=players, **definition)
         return match.play()
+
+

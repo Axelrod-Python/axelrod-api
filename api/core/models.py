@@ -1,11 +1,9 @@
 from rest_framework import serializers
 from django.contrib.postgres.fields import JSONField
 from django.db.models import (
-    AutoField,
     BooleanField,
     DateTimeField,
     CharField,
-    ForeignKey,
     IntegerField,
     TextField,
     FloatField,
@@ -125,9 +123,6 @@ class TournamentDefinition(Model):
     repetitions = IntegerField()
     noise = FloatField()
     with_morality = BooleanField()
-    player_list = serializers.ListField(child=serializers.CharField())
-    players = []
-
     # Relationship Fields
     # tournament = ForeignKey('Tournament',)
 
@@ -135,5 +130,3 @@ class TournamentDefinition(Model):
 class MatchDefinition(Model):
     turns = IntegerField()
     noise = FloatField()
-    player_list = serializers.ListField(child=serializers.CharField())
-    players = []
