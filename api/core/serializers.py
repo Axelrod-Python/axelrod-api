@@ -1,11 +1,10 @@
+import json
+
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from . import models
-
-
-def strategy_id(strategy):
-    return strategy.name.lower().replace(' ', '')
+from .utils import strategy_id
 
 
 class StrategySerializer(serializers.Serializer):
@@ -49,11 +48,15 @@ class StrategySerializer(serializers.Serializer):
 
 
 class StringListField(serializers.ListField):
-    child = serializers.CharField(trim_whitespace=True)
+    child = serializers.CharField()
 
 
-class TournamentSerializer(serializers.ModelSerializer):
-    player_list = StringListField(min_length=2, max_length=None)
+class TournamentDefinitionSerializer(serializers.ModelSerializer):
+
+    def validate_player_list(self, player_list):
+        if len(player_list) < 2:
+            raise serializers.ValidationError('This field requires at least 2 items')
+        return player_list
 
     class Meta:
         model = models.TournamentDefinition
@@ -61,15 +64,127 @@ class TournamentSerializer(serializers.ModelSerializer):
                   'repetitions', 'noise', 'with_morality', 'player_list')
 
 
-class MatchSerializer(serializers.ModelSerializer):
-    player_list = StringListField(min_length=2, max_length=2)
+class TournamentSerializer(serializers.ModelSerializer):
+    definition = TournamentDefinitionSerializer()
+
+    class Meta:
+        model = models.Tournament
+        fields = ('id', 'created', 'last_updated', 'status', 'definition', 'results')
+
+
+class MatchDefinitionSerializer(serializers.ModelSerializer):
+
+    def validate_player_list(self, player_list):
+        if len(player_list) != 2:
+            raise serializers.ValidationError('This field requires exactly 2 items')
+        return player_list
 
     class Meta:
         model = models.MatchDefinition
         fields = ('turns', 'noise', 'player_list')
 
 
-class ResultsSerializer:
+class MatchSerializer(serializers.ModelSerializer):
+    definition = MatchDefinitionSerializer()
+
+    class Meta:
+        model = models.Match
+        fields = ('id', 'created', 'last_updated', 'status', 'definition', 'results')
+
+
+class MoranDefinitionSerializer(serializers.ModelSerializer):
+    mode = serializers.CharField(min_length=2, max_length=2)
+
+    def validate_player_list(self, player_list):
+        if len(player_list) < 2:
+            raise serializers.ValidationError('This field requires at least 2 items')
+        return player_list
+
+    class Meta:
+        model = models.MoranDefinition
+        fields = ('created', 'last_updated', 'turns', 'noise',
+                  'mode', 'player_list')
+
+
+class MoranSerializer(serializers.ModelSerializer):
+    definition = MoranDefinitionSerializer()
+
+    class Meta:
+        model = models.Match
+        fields = ('id', 'created', 'last_updated', 'status', 'definition', 'results')
+
+
+class GameResultSerializer:
+
+    @staticmethod
+    def test_json(value):
+        try:
+            json.dumps(value)
+            return value
+        except TypeError:
+            return str(value)
+
+    def __init__(self, result):
+        response_object = {}
+        for key, value in result.__dict__.items():
+            if key not in self.exclude:
+                key = self.test_json(key)
+                value = self.test_json(value)
+                response_object[key] = value
+
+        # we mimic DRF serializer by setting data property instead of returning
+        self.data = response_object
+
+
+class MoranResultsSerializer(GameResultSerializer):
+
+    handle_locally = [
+        'mutation_targets',
+        'initial_players',
+        'players',
+    ]
+
+    exclude = [
+        'match_class',
+        'deterministic_cache',
+    ] + handle_locally
+
+    def __init__(self, result):
+        super().__init__(result)
+        self.data['mutation_targets'] = self.clean_mutation_targets(result)
+        self.data['initial_players'] = [str(s) for s in result.initial_players]
+        self.data['players'] = [str(s) for s in result.players]
+
+    @staticmethod
+    def clean_mutation_targets(result):
+        mutation_targets = {}
+        for strategy, target in result.mutation_targets.items():
+            mutation_targets[str(strategy)] = [str(s) for s in target]
+        return mutation_targets
+
+
+class MatchResultsSerializer(GameResultSerializer):
+
+    handle_locally = []
+
+    exclude = [
+        '_cache_key',
+        '_cache',
+        '_players',
+        'game',
+        'match_attributes',
+    ] + handle_locally
+
+    def __init__(self, result):
+        super().__init__(result)
+        self.data['scores'] = result.scores()
+        self.data['final_score'] = result.final_score()
+        self.data['final_score_per_turn'] = result.final_score_per_turn()
+        self.data['winner'] = str(result.winner())
+        self.data['scores'] = result.scores()
+
+
+class TournamentResultsSerializer(GameResultSerializer):
     """
     Serialize an axelrod ResultSet class into a dictionary by
     iterating over its __dict__ method.
@@ -81,68 +196,14 @@ class ResultsSerializer:
 
     # TODO implement state_distribution serializations
     state_distribution_keys = [
-        'state_distribution',
     ]
 
     # keys that have not been implemented
-    ignore_keys = [
+    exclude = [
+        'state_distribution',
         'normalised_state_distribution',
         'state_to_action_distribution',
         'normalised_state_to_action_distribution',
         'game',
-    ]
-
-    # keys where the value is not json serializable
-    invalid_keys = [
         'progress_bar'
     ]
-
-    # keys we should not retrieve from __dict__ method
-    exclude = state_distribution_keys + ignore_keys + invalid_keys
-
-    def __init__(self, results):
-        """
-        Parameters
-        ----------
-            results: ResultSet:
-                https://github.com/Axelrod-Python/Axelrod/blob/master/axelrod/result_set.py
-        """
-        response_object = self.serialize_state_distributions(results)
-        for key, value in results.__dict__.items():
-            if key not in self.exclude:
-                response_object[key] = value
-        # we mimic DRF serializer by setting data property instead of returning
-        self.data = response_object
-
-    def serialize_state_distributions(self, results):
-        """
-        Initialize the response_object dictionary and set in it a
-        set of lists that contain serialized Counter objects
-
-        Parameters
-        ----------
-
-            results: ResultSet
-                results from a Tournament/Match
-        """
-        return {
-            key: self.serialize_state_distribution(getattr(results, key))
-            for key in self.state_distribution_keys
-        }
-
-    @staticmethod
-    def serialize_state_distribution(state_distribution):
-        """
-        Iterate over a state distribution and serialize all of
-        its Counter objects
-
-        Parameters
-        ----------
-
-            state_distribution: list of Counter
-                state_distribution from ResultSet
-        """
-        distribution = []
-        for counter in state_distribution:
-            distribution.append([c.most_common() for c in counter])
-        return distribution

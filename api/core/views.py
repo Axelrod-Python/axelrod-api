@@ -1,15 +1,28 @@
 from distutils.util import strtobool
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from rest_framework import viewsets
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 import axelrod as axl
+from api.core import models
+from api.core.models import InternalStrategy
 from api.core.serializers import (
-    strategy_id,
     MatchSerializer,
+    MatchDefinitionSerializer,
+    MatchResultsSerializer,
+    MoranSerializer,
+    MoranDefinitionSerializer,
+    MoranResultsSerializer,
     StrategySerializer,
     TournamentSerializer,
+    TournamentDefinitionSerializer,
+    TournamentResultsSerializer,
 )
-from api.core.serializers import ResultsSerializer
+
+from .utils import strategy_id
 
 
 def filter_strategies(request):
@@ -66,7 +79,7 @@ class StrategyViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 
-class BaseGameView(viewsets.ViewSet):
+class GameViewSet(viewsets.ViewSet):
     """
     Base game object for ViewSets to inherit. Creates, retrieves and
     cancels games.
@@ -90,57 +103,127 @@ class BaseGameView(viewsets.ViewSet):
             players.append(strategy())
         return players
 
+    def validate_and_create_strategies(self, player_list):
+        """
+        generate the axelrod Strategy from each player
+        in the player list.
+
+        Parameters
+        ----------
+            player_list: list of strings
+                a list of player ids
+        """
+        # note that we must instantiate the strategy
+        return [self.strategies_index[s]() for s in player_list]
+
+    @staticmethod
+    def create_players(strategy):
+        """
+        check to see if the internal strategy exists in
+        the database and create it if not.
+
+        Parameters
+        ----------
+            strategy: string
+                strategy id
+        """
+        try:
+            return InternalStrategy.objects.get(id=strategy)
+        except ObjectDoesNotExist:
+            return InternalStrategy.objects.create(id=strategy)
+
+    def start(self, definition, strategies):
+        """start a game based on definition and list of strategies"""
+        game = self.model.objects.create(definition=definition, status=0)
+        result = game.run(strategies)
+        game.results = self.results_serializer(result).data
+        game.save()
+        return game
+
     def create(self, request):
         """
-        POST method
-
         Take in a game_definition which expects all of the
         required parameters of the type of game, a list of
         player strings, and starts the game.
         """
-        serializer = self.serializer(data=request.data)
-        if serializer.is_valid():
-            game_definition = serializer.data
+        try:
+            strategies = self.validate_and_create_strategies(request.data['player_list'])
+        except KeyError as e:
+            return Response({
+                'player_list': [self._not_found_error.format(e.args[0])]
+            }, 400)
 
-            try:
-                players = self._parse_players(request.data['player_list'])
-                game_definition.pop('player_list')
-            except KeyError as e:
-                return Response({
-                    'player_list': [self._not_found_error.format(e.args[0])]
-                }, 400)
+        # update Internal Strategy store
+        [self.create_players(s) for s in request.data['player_list']]
 
-            results = self.run(players, game_definition)
-            return Response(ResultsSerializer(results).data, 201)
-        return Response(serializer.errors, 400)
+        definition_serializer = self.definition_serializer(data=request.data)
+        if definition_serializer.is_valid():
+            definition = definition_serializer.save()
+            game = self.start(definition, strategies)
+            game_serializer = self.response_serializer(game)
+            return Response(game_serializer.data, 201)
+        return Response(definition_serializer.errors, 400)
+
+    def list(self):
+        """retrieve a list of all games of this type"""
+        games = self.model.objects.all()
+        serializer = self.response_serializer(games, many=True)
+        return Response(serializer.data, 200)
+
+    def retrieve(self, request, pk=None):
+        """retrieve a specific game"""
+        try:
+            game = self.model.objects.get(id=pk)
+        except ObjectDoesNotExist:
+            raise Http404
+        serializer = self.response_serializer(game)
+        return Response(serializer.data, 200)
+
+    def destroy(self, request, pk=None):
+        try:
+            self.model.objects.get(id=pk).delete()
+        except ObjectDoesNotExist:
+            raise Http404
+        return Response('Deleted')
 
 
-class TournamentViewSet(BaseGameView):
+class TournamentViewSet(GameViewSet):
     """
     View that handles the creation and retrieval of tournaments. A
     tournament consists of two or more players facing each other
     in a round robin bout.
     """
 
-    serializer = TournamentSerializer
+    definition_serializer = TournamentDefinitionSerializer
+    definition_model = models.TournamentDefinition
+    results_serializer = TournamentResultsSerializer
+    response_serializer = TournamentSerializer
+    model = models.Tournament
 
-    @staticmethod
-    def run(players, definition):
-        tournament = axl.Tournament(players=players, **definition)
-        return tournament.play()
 
-
-class MatchViewSet(BaseGameView):
+class MatchViewSet(GameViewSet):
     """
     View that handles creation and retrieval of matches. A match
     is a 1v1 game between two players.
     """
 
-    serializer = MatchSerializer
+    definition_serializer = MatchDefinitionSerializer
+    definition_model = models.MatchDefinition
+    results_serializer = MatchResultsSerializer
+    response_serializer = MatchSerializer
+    model = models.Match
 
-    @staticmethod
-    def run(players, definition):
-        match = axl.Match(players=players, **definition)
-        return match.play()
+
+class MoranViewSet(GameViewSet):
+    """
+    View that handles the creation and retrieval of Moran
+    Processes. This is a
+    """
+
+    definition_serializer = MoranDefinitionSerializer
+    definition_model = models.MoranDefinition
+    results_serializer = MoranResultsSerializer
+    response_serializer = MoranSerializer
+    model = models.MoranProcess
 
 
