@@ -31,7 +31,7 @@ class Game(Model):
     created = DateTimeField(auto_now_add=True, editable=False)
     last_updated = DateTimeField(auto_now=True, editable=False)
     status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    results = JSONField()
+    results = JSONField(null=True)
 
     class Meta:
         abstract = True

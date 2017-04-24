@@ -1,8 +1,13 @@
 import os
+import sys
 import dj_database_url
 
-# Environment specific settings from environment variables or local .env file
-SECRET_KEY = os.environ['SECRET_KEY']
+# handle case where we are testing with no .env file
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    SECRET_KEY = 'l#-9)38*k9h9yfkcxwii++_m@3jkm%vojnjl^gkzyzmcfr_afo'
+else:
+    SECRET_KEY = os.environ['SECRET_KEY']
+
 DEBUG = bool(os.environ.get('DEBUG', False))
 DOCKER = bool(os.environ.get('DOCKER_HOST', False))
 

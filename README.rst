@@ -56,8 +56,6 @@ from there rather than the command line from now on.
 Running Tests
 -------------
 
-Make sure you have created a .env file as above. To run all tests:
-
 .. code::
 
   python manage.py test --settings=api.config.test_settings

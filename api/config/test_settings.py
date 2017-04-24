@@ -9,6 +9,9 @@ from api.config.settings import *
 
 
 if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    # non production key
+
+
     # use an in memory sqlite3 backend for performance
     DATABASES = {
         'default': {
