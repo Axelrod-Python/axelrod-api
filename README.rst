@@ -27,6 +27,7 @@ project folder to start the web and database servers:
 
 .. code::
 
+  docker volume create --name=postgres
   docker-compose up
 
 This will take several minutes the first time you run it as it needs to download and install all the necessary
