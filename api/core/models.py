@@ -41,28 +41,22 @@ class Game(Model):
     results = JSONField()
 
     class Meta:
-        managed = False
+        abstract = True
 
 
-class Tournament(Model):
-
-    PENDING = 0
-    RUNNING = 1
-    SUCCESS = 2
-    FAILED = 3
-
-    STATUS_CHOICES = (
-        (PENDING, 'PENDING'),
-        (RUNNING, 'RUNNING'),
-        (SUCCESS, 'SUCCESS'),
-        (FAILED, 'FAILED'),
-    )
-
-    # Fields
+class GameDefinition(Model):
     created = DateTimeField(auto_now_add=True, editable=False)
     last_updated = DateTimeField(auto_now=True, editable=False)
-    status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    results = JSONField(null=True)
+    turns = IntegerField()
+    noise = FloatField()
+    player_list = ManyToManyField('InternalStrategy')
+
+    class Meta:
+        abstract = True
+
+
+class Tournament(Game):
+
     definition = ForeignKey('TournamentDefinition')
 
     def run(self, strategies):
@@ -80,37 +74,14 @@ class Tournament(Model):
         return results
 
 
-class TournamentDefinition(Model):
-    # Fields
+class TournamentDefinition(GameDefinition):
     name = CharField(max_length=255)
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    turns = IntegerField()
     repetitions = IntegerField()
-    noise = FloatField()
     with_morality = BooleanField()
-    player_list = ManyToManyField('InternalStrategy')
 
 
-class Match(Model):
+class Match(Game):
 
-    PENDING = 0
-    RUNNING = 1
-    SUCCESS = 2
-    FAILED = 3
-
-    STATUS_CHOICES = (
-        (PENDING, 'PENDING'),
-        (RUNNING, 'RUNNING'),
-        (SUCCESS, 'SUCCESS'),
-        (FAILED, 'FAILED'),
-    )
-
-    # Fields
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    results = JSONField(null=True)
     definition = ForeignKey('MatchDefinition')
 
     def run(self, strategies):
@@ -125,33 +96,14 @@ class Match(Model):
         return match
 
 
-class MatchDefinition(Model):
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    turns = IntegerField()
-    noise = FloatField()
-    player_list = ManyToManyField('InternalStrategy')
+class MatchDefinition(GameDefinition):
+
+    class Meta:
+        managed = True
 
 
-class MoranProcess(Model):
+class MoranProcess(Game):
 
-    PENDING = 0
-    RUNNING = 1
-    SUCCESS = 2
-    FAILED = 3
-
-    STATUS_CHOICES = (
-        (PENDING, 'PENDING'),
-        (RUNNING, 'RUNNING'),
-        (SUCCESS, 'SUCCESS'),
-        (FAILED, 'FAILED'),
-    )
-
-    # Fields
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    status = IntegerField(choices=STATUS_CHOICES, default=PENDING)
-    results = JSONField(null=True)
     definition = ForeignKey('MoranDefinition')
 
     def run(self, strategies):
@@ -168,23 +120,19 @@ class MoranProcess(Model):
         return mp
 
 
-class MoranDefinition(Model):
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    turns = IntegerField()
-    noise = FloatField()
+class MoranDefinition(GameDefinition):
     mode = CharField(max_length=2)
-    player_list = ManyToManyField('InternalStrategy')
 
 
 class InternalStrategy(Model):
+    """
+    This model is used to represent strategies in an internal
+    database table. Games reference this in a ManyToMany
+    to store the strategies in their player_list field. This is
+    necessary to facilitate normalization of the database.
+    """
     id = TextField(primary_key=True)
     created = DateTimeField(auto_now_add=True, editable=False)
     last_updated = DateTimeField(auto_now=True, editable=False)
 
 
-class Result(Model):
-    created = DateTimeField(auto_now_add=True, editable=False)
-    last_updated = DateTimeField(auto_now=True, editable=False)
-    type = CharField(max_length=255)
-    result = JSONField()
