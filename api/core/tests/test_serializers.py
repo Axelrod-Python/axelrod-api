@@ -2,11 +2,18 @@ from unittest import TestCase
 import axelrod as axl
 from rest_framework.test import APIRequestFactory
 
+from api.core.models import InternalStrategy
 from api.core.serializers import (
     MatchSerializer,
-    ResultsSerializer,
+    MatchDefinitionSerializer,
+    MatchResultsSerializer,
+    MoranSerializer,
+    MoranDefinitionSerializer,
+    MoranResultsSerializer,
     StrategySerializer,
     TournamentSerializer,
+    TournamentDefinitionSerializer,
+    TournamentResultsSerializer,
 )
 
 
@@ -65,7 +72,7 @@ class TestStrategySerializer(TestCase):
         self.assertEqual({'memory_depth': -1}, serializer.data['params'])
 
 
-class TestTournamentSerializer(TestCase):
+class TestTournamentDefinitionSerializer(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -90,27 +97,33 @@ class TestTournamentSerializer(TestCase):
             'repetitions': 2,
             'noise': 0.1,
             'with_morality': False,
-            'player_list': ['test']
+            'player_list': ['test', 'test2']
         }
+        InternalStrategy.objects.create(id='test1')
+        InternalStrategy.objects.create(id='test2')
+
+    @classmethod
+    def tearDownClass(cls):
+        InternalStrategy.objects.all().delete()
 
     def test_is_valid_with_all_fields(self):
-        serializer = TournamentSerializer(data=self.valid_post_data)
+        serializer = TournamentDefinitionSerializer(data=self.valid_post_data)
         self.assertTrue(serializer.is_valid())
 
     def test_is_invalid_with_missing_fields(self):
-        serializer = TournamentSerializer(data=self.missing_name)
+        serializer = TournamentDefinitionSerializer(data=self.missing_name)
         self.assertFalse(serializer.is_valid())
         self.assertEqual({'name': ['This field is required.']}, serializer.errors)
 
     def test_is_invalid_with_incorrect_value(self):
-        serializer = TournamentSerializer(data=self.invalid_field_values)
+        serializer = TournamentDefinitionSerializer(data=self.invalid_field_values)
         self.assertFalse(serializer.is_valid())
         self.assertEqual({
-            'player_list': ['Ensure this field has at least 2 elements.']
+            'player_list': ['Invalid pk "test" - object does not exist.']
         }, serializer.errors)
 
 
-class TestMatchSerializer(TestCase):
+class TestMatchDefinitionSerializer(TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -128,32 +141,38 @@ class TestMatchSerializer(TestCase):
             'noise': 0.1,
             'player_list': ['test1']
         }
+        InternalStrategy.objects.create(id='test1')
+        InternalStrategy.objects.create(id='test2')
+
+    @classmethod
+    def tearDownClass(cls):
+        InternalStrategy.objects.all().delete()
 
     def test_is_valid_with_all_fields(self):
-        serializer = MatchSerializer(data=self.valid_post_data)
+        serializer = MatchDefinitionSerializer(data=self.valid_post_data)
         self.assertTrue(serializer.is_valid())
 
     def test_is_invalid_with_missing_fields(self):
-        serializer = MatchSerializer(data=self.missing_turns)
+        serializer = MatchDefinitionSerializer(data=self.missing_turns)
         self.assertFalse(serializer.is_valid())
         self.assertEqual({'turns': ['This field is required.']}, serializer.errors)
 
     def test_is_invalid_with_incorrect_value(self):
-        serializer = MatchSerializer(data=self.invalid_field_values)
+        serializer = MatchDefinitionSerializer(data=self.invalid_field_values)
         self.assertFalse(serializer.is_valid())
         self.assertEqual({
-            'player_list': ['Ensure this field has at least 2 elements.']
+            'player_list': ['Ensure this field has exactly 2 elements.']
         }, serializer.errors)
 
 
-class TestResultSerializer(TestCase):
+class TestTournamentResultSerializer(TestCase):
 
     @classmethod
     def setUpClass(cls):
         players = [axl.Alternator(), axl.TitForTat()]
         tournament = axl.Tournament(players)
         cls.results = tournament.play()
-        cls.data = ResultsSerializer(cls.results).data
+        cls.data = TournamentResultsSerializer(cls.results).data
         cls.expected_keys = [
             'filename', 'num_interactions', 'players', 'repetitions',
             'nplayers', 'match_lengths', 'wins', 'scores', 'normalised_scores',
@@ -162,7 +181,7 @@ class TestResultSerializer(TestCase):
             'good_partner_rating', 'ranking', 'ranked_names', 'payoff_matrix',
             'payoff_stddevs', 'payoff_diffs_means', 'vengeful_cooperation',
             'cooperating_rating', 'initial_cooperation_rate', 'eigenjesus_rating',
-            'eigenmoses_rating', 'wins', 'state_distribution'
+            'eigenmoses_rating', 'wins',
         ]
 
     def test_data_keys_in_expected(self):

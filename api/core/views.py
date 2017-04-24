@@ -3,8 +3,6 @@ from distutils.util import strtobool
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from rest_framework import viewsets
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 import axelrod as axl
 from api.core import models
@@ -90,21 +88,6 @@ class GameViewSet(viewsets.ViewSet):
 
     def _parse_players(self, player_list):
         """
-        convert list of player strings into list of Strategies
-
-        Parameters
-        ----------
-            player_list: list of strings
-                a list of player ids
-        """
-        players = []
-        for player in player_list:
-            strategy = self.strategies_index[player]
-            players.append(strategy())
-        return players
-
-    def validate_and_create_strategies(self, player_list):
-        """
         generate the axelrod Strategy from each player
         in the player list.
 
@@ -113,7 +96,6 @@ class GameViewSet(viewsets.ViewSet):
             player_list: list of strings
                 a list of player ids
         """
-        # note that we must instantiate the strategy
         return [self.strategies_index[s]() for s in player_list]
 
     @staticmethod
@@ -147,7 +129,7 @@ class GameViewSet(viewsets.ViewSet):
         player strings, and starts the game.
         """
         try:
-            strategies = self.validate_and_create_strategies(request.data['player_list'])
+            strategies = self._parse_players(request.data['player_list'])
         except KeyError as e:
             return Response({
                 'player_list': [self._not_found_error.format(e.args[0])]
@@ -160,11 +142,11 @@ class GameViewSet(viewsets.ViewSet):
         if definition_serializer.is_valid():
             definition = definition_serializer.save()
             game = self.start(definition, strategies)
-            game_serializer = self.response_serializer(game)
-            return Response(game_serializer.data, 201)
+            response = self.response_serializer(game)
+            return Response(response.data, 201)
         return Response(definition_serializer.errors, 400)
 
-    def list(self):
+    def list(self, request):
         """retrieve a list of all games of this type"""
         games = self.model.objects.all()
         serializer = self.response_serializer(games, many=True)
@@ -184,7 +166,7 @@ class GameViewSet(viewsets.ViewSet):
             self.model.objects.get(id=pk).delete()
         except ObjectDoesNotExist:
             raise Http404
-        return Response('Deleted')
+        return Response(status=204)
 
 
 class TournamentViewSet(GameViewSet):

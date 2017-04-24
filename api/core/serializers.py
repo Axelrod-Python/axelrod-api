@@ -55,7 +55,7 @@ class TournamentDefinitionSerializer(serializers.ModelSerializer):
 
     def validate_player_list(self, player_list):
         if len(player_list) < 2:
-            raise serializers.ValidationError('This field requires at least 2 items')
+            raise serializers.ValidationError('Ensure this field has at least 2 elements.')
         return player_list
 
     class Meta:
@@ -76,7 +76,7 @@ class MatchDefinitionSerializer(serializers.ModelSerializer):
 
     def validate_player_list(self, player_list):
         if len(player_list) != 2:
-            raise serializers.ValidationError('This field requires exactly 2 items')
+            raise serializers.ValidationError('Ensure this field has exactly 2 elements.')
         return player_list
 
     class Meta:
@@ -97,7 +97,7 @@ class MoranDefinitionSerializer(serializers.ModelSerializer):
 
     def validate_player_list(self, player_list):
         if len(player_list) < 2:
-            raise serializers.ValidationError('This field requires at least 2 items')
+            raise serializers.ValidationError('Ensure this field has at least 2 elements.')
         return player_list
 
     class Meta:
@@ -116,20 +116,10 @@ class MoranSerializer(serializers.ModelSerializer):
 
 class GameResultSerializer:
 
-    @staticmethod
-    def test_json(value):
-        try:
-            json.dumps(value)
-            return value
-        except TypeError:
-            return str(value)
-
     def __init__(self, result):
         response_object = {}
         for key, value in result.__dict__.items():
             if key not in self.exclude:
-                key = self.test_json(key)
-                value = self.test_json(value)
                 response_object[key] = value
 
         # we mimic DRF serializer by setting data property instead of returning
