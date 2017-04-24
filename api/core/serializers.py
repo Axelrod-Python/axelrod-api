@@ -47,13 +47,10 @@ class StrategySerializer(serializers.Serializer):
         return params
 
 
-class StringListField(serializers.ListField):
-    child = serializers.CharField()
-
-
 class TournamentDefinitionSerializer(serializers.ModelSerializer):
 
-    def validate_player_list(self, player_list):
+    @staticmethod
+    def validate_player_list(player_list):
         if len(player_list) < 2:
             raise serializers.ValidationError('Ensure this field has at least 2 elements.')
         return player_list
@@ -74,7 +71,8 @@ class TournamentSerializer(serializers.ModelSerializer):
 
 class MatchDefinitionSerializer(serializers.ModelSerializer):
 
-    def validate_player_list(self, player_list):
+    @staticmethod
+    def validate_player_list(player_list):
         if len(player_list) != 2:
             raise serializers.ValidationError('Ensure this field has exactly 2 elements.')
         return player_list
@@ -95,7 +93,8 @@ class MatchSerializer(serializers.ModelSerializer):
 class MoranDefinitionSerializer(serializers.ModelSerializer):
     mode = serializers.CharField(min_length=2, max_length=2)
 
-    def validate_player_list(self, player_list):
+    @staticmethod
+    def validate_player_list(player_list):
         if len(player_list) < 2:
             raise serializers.ValidationError('Ensure this field has at least 2 elements.')
         return player_list
@@ -115,6 +114,10 @@ class MoranSerializer(serializers.ModelSerializer):
 
 
 class GameResultSerializer:
+    """
+    Serialize the result of an axelrod game into a dictionary by
+    iterating over its __dict__ method.
+    """
 
     def __init__(self, result):
         response_object = {}
@@ -175,16 +178,7 @@ class MatchResultsSerializer(GameResultSerializer):
 
 
 class TournamentResultsSerializer(GameResultSerializer):
-    """
-    Serialize an axelrod ResultSet class into a dictionary by
-    iterating over its __dict__ method.
 
-    For complex objects (Game, State objects) more in depth serialization
-    is required - these are handled in separate methods. For example the
-    state_distribution_keys are
-    """
-
-    # TODO implement state_distribution serializations
     state_distribution_keys = [
     ]
 

@@ -86,16 +86,18 @@ class GameViewSet(viewsets.ViewSet):
     strategies_index = {strategy_id(s): s for s in axl.strategies}
     _not_found_error = 'Strategy not found: {}'
 
-    def _parse_players(self, player_list):
+    def get_strategy_from_id(self, player_list):
         """
-        generate the axelrod Strategy from each player
-        in the player list.
+        retrieve the axelrod Strategy or each player
+        in the player list and instantiate them.
 
         Parameters
         ----------
             player_list: list of strings
-                a list of player ids
+                a list of strategy ids
         """
+        # note that the strategy is being instantiated - bugs with
+        # misleading error messages will be generated if they are not
         return [self.strategies_index[s]() for s in player_list]
 
     @staticmethod
@@ -114,23 +116,35 @@ class GameViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             return InternalStrategy.objects.create(id=strategy)
 
-    def start(self, definition, strategies):
-        """start a game based on definition and list of strategies"""
+    def start_game(self, definition, players):
+        """
+        start a game based on definition and list of strategies
+
+        Parameters
+        ----------
+            definition: GameDefinition
+                definition class that contains all game parameters
+            players: list of axelrod.Strategy
+                **instantiated** axelrod Strategy classes that are
+                playing the game
+        """
         game = self.model.objects.create(definition=definition, status=0)
-        result = game.run(strategies)
+        result = game.run(players)
         game.results = self.results_serializer(result).data
         game.save()
         return game
 
     def create(self, request):
         """
-        Take in a game_definition which expects all of the
-        required parameters of the type of game, a list of
-        player strings, and starts the game.
+        Take in a game definition from JSON post data which
+        expects all of the required parameters of the game,
+        a list of and a list of player strings. Once all of
+        these are validated, start the game.
         """
         try:
-            strategies = self._parse_players(request.data['player_list'])
+            players = self.get_strategy_from_id(request.data['player_list'])
         except KeyError as e:
+            # handle case where strategy id is not found in list of strategies
             return Response({
                 'player_list': [self._not_found_error.format(e.args[0])]
             }, 400)
@@ -141,15 +155,14 @@ class GameViewSet(viewsets.ViewSet):
         definition_serializer = self.definition_serializer(data=request.data)
         if definition_serializer.is_valid():
             definition = definition_serializer.save()
-            game = self.start(definition, strategies)
-            response = self.response_serializer(game)
-            return Response(response.data, 201)
+            game = self.start_game(definition, players)
+            return Response(self.game_serializer(game).data, 201)
         return Response(definition_serializer.errors, 400)
 
     def list(self, request):
         """retrieve a list of all games of this type"""
         games = self.model.objects.all()
-        serializer = self.response_serializer(games, many=True)
+        serializer = self.game_serializer(games, many=True)
         return Response(serializer.data, 200)
 
     def retrieve(self, request, pk=None):
@@ -158,10 +171,11 @@ class GameViewSet(viewsets.ViewSet):
             game = self.model.objects.get(id=pk)
         except ObjectDoesNotExist:
             raise Http404
-        serializer = self.response_serializer(game)
+        serializer = self.game_serializer(game)
         return Response(serializer.data, 200)
 
     def destroy(self, request, pk=None):
+        """delete a specific game"""
         try:
             self.model.objects.get(id=pk).delete()
         except ObjectDoesNotExist:
@@ -179,7 +193,7 @@ class TournamentViewSet(GameViewSet):
     definition_serializer = TournamentDefinitionSerializer
     definition_model = models.TournamentDefinition
     results_serializer = TournamentResultsSerializer
-    response_serializer = TournamentSerializer
+    game_serializer = TournamentSerializer
     model = models.Tournament
 
 
@@ -192,20 +206,20 @@ class MatchViewSet(GameViewSet):
     definition_serializer = MatchDefinitionSerializer
     definition_model = models.MatchDefinition
     results_serializer = MatchResultsSerializer
-    response_serializer = MatchSerializer
+    game_serializer = MatchSerializer
     model = models.Match
 
 
 class MoranViewSet(GameViewSet):
     """
     View that handles the creation and retrieval of Moran
-    Processes. This is a
+    Processes.
     """
 
     definition_serializer = MoranDefinitionSerializer
     definition_model = models.MoranDefinition
     results_serializer = MoranResultsSerializer
-    response_serializer = MoranSerializer
+    game_serializer = MoranSerializer
     model = models.MoranProcess
 
 

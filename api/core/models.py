@@ -1,9 +1,4 @@
-from rest_framework import serializers
 from django.contrib.postgres.fields import JSONField
-import axelrod as axl
-
-from .utils import strategy_id
-
 from django.db.models import (
     BooleanField,
     DateTimeField,
@@ -15,9 +10,7 @@ from django.db.models import (
     ManyToManyField,
     TextField,
 )
-
-strategies_index = {strategy_id(s): s for s in axl.strategies}
-CHEATING_NAMES = [strategy.__name__ for strategy in axl.cheating_strategies]
+import axelrod as axl
 
 
 class Game(Model):
