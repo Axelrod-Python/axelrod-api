@@ -20,12 +20,6 @@ class TestStrategy(object):
         return {}
 
 
-class TestGame(object):
-
-    def __init__(self):
-        pass
-
-
 class TestStrategyView(TestCase):
     strategies = [
         TestStrategy('Test One', {'stochastic': True, 'memory_depth': 1}),
@@ -65,7 +59,6 @@ class TestTournamentPostView(TestCase):
         cls.tournament1 = Tournament(id=3)
         cls.valid_post_data = {
             'id': 10,
-            'name': 'tournament',
             'turns': 5,
             'repetitions': 2,
             'noise': 0.1,
@@ -73,22 +66,19 @@ class TestTournamentPostView(TestCase):
             'player_list': ["adaptive", "allcoralld", "adaptive", "anticycler"],
         }
         cls.no_strategy_found = {
-            'name': 'tournament',
             'turns': 5,
             'repetitions': 2,
             'noise': 0.1,
             'with_morality': False,
             'player_list': ["adapt", "allcoralld"],
         }
-        cls.missing_name = {
+        cls.missing_noise = {
             'turns': 5,
             'repetitions': 2,
-            'noise': 0.1,
             'with_morality': False,
             'player_list': ["adaptive", "allcoralld", "adaptive", "anticycler"],
         }
         cls.one_strategy = {
-            'name': 'tournament',
             'turns': 5,
             'repetitions': 2,
             'noise': 0.1,
@@ -123,10 +113,10 @@ class TestTournamentPostView(TestCase):
 
     def test_invalid_field(self):
         response = self.client.post('/tournaments/',
-                                    json.dumps(self.missing_name),
+                                    json.dumps(self.missing_noise),
                                     content_type='application/json')
         self.assertEqual(400, response.status_code)
-        self.assertEqual({'name': ['This field is required.']}, response.data)
+        self.assertEqual({'noise': ['This field is required.']}, response.data)
 
     def test_invalid_strategy_count(self):
         response = self.client.post('/tournaments/',

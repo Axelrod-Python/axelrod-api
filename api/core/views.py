@@ -77,10 +77,10 @@ class StrategyViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
 
-class GameViewSet(viewsets.ViewSet):
+class BaseContestViewSet(viewsets.ViewSet):
     """
-    Base game object for ViewSets to inherit. Creates, retrieves and
-    cancels games.
+    Base contest object for ViewSets to inherit. Creates, retrieves and
+    cancels contests.
     """
 
     strategies_index = {strategy_id(s): s for s in axl.strategies}
@@ -116,30 +116,30 @@ class GameViewSet(viewsets.ViewSet):
         except ObjectDoesNotExist:
             return InternalStrategy.objects.create(id=strategy)
 
-    def start_game(self, definition, players):
+    def start_contest(self, definition, players):
         """
-        start a game based on definition and list of strategies
+        start a contest based on definition and list of strategies
 
         Parameters
         ----------
-            definition: GameDefinition
-                definition class that contains all game parameters
+            definition: ContestDefinition
+                definition class that contains all contest parameters
             players: list of axelrod.Strategy
                 **instantiated** axelrod Strategy classes that are
-                playing the game
+                playing the contest
         """
-        game = self.model.objects.create(definition=definition, status=0)
-        result = game.run(players)
-        game.results = self.results_serializer(result).data
-        game.save()
-        return game
+        contest = self.model.objects.create(definition=definition, status=0)
+        result = contest.run(players)
+        contest.results = self.results_serializer(result).data
+        contest.save()
+        return contest
 
     def create(self, request):
         """
-        Take in a game definition from JSON post data which
-        expects all of the required parameters of the game,
+        Take in a contest definition from JSON post data which
+        expects all of the required parameters of the contest,
         a list of and a list of player strings. Once all of
-        these are validated, start the game.
+        these are validated, start the contest.
         """
         try:
             players = self.get_strategy_from_id(request.data['player_list'])
@@ -155,27 +155,27 @@ class GameViewSet(viewsets.ViewSet):
         definition_serializer = self.definition_serializer(data=request.data)
         if definition_serializer.is_valid():
             definition = definition_serializer.save()
-            game = self.start_game(definition, players)
-            return Response(self.game_serializer(game).data, 201)
+            contest = self.start_contest(definition, players)
+            return Response(self.contest_serializer(contest).data, 201)
         return Response(definition_serializer.errors, 400)
 
     def list(self, request):
-        """retrieve a list of all games of this type"""
-        games = self.model.objects.all()
-        serializer = self.game_serializer(games, many=True)
+        """retrieve a list of all contests of this type"""
+        contests = self.model.objects.all()
+        serializer = self.contest_serializer(contests, many=True)
         return Response(serializer.data, 200)
 
     def retrieve(self, request, pk=None):
-        """retrieve a specific game"""
+        """retrieve a specific contest"""
         try:
-            game = self.model.objects.get(id=pk)
+            contest = self.model.objects.get(id=pk)
         except ObjectDoesNotExist:
             raise Http404
-        serializer = self.game_serializer(game)
+        serializer = self.contest_serializer(contest)
         return Response(serializer.data, 200)
 
     def destroy(self, request, pk=None):
-        """delete a specific game"""
+        """delete a specific contest"""
         try:
             self.model.objects.get(id=pk).delete()
         except ObjectDoesNotExist:
@@ -183,7 +183,7 @@ class GameViewSet(viewsets.ViewSet):
         return Response(status=204)
 
 
-class TournamentViewSet(GameViewSet):
+class TournamentViewSet(BaseContestViewSet):
     """
     View that handles the creation and retrieval of tournaments. A
     tournament consists of two or more players facing each other
@@ -193,24 +193,24 @@ class TournamentViewSet(GameViewSet):
     definition_serializer = TournamentDefinitionSerializer
     definition_model = models.TournamentDefinition
     results_serializer = TournamentResultsSerializer
-    game_serializer = TournamentSerializer
+    contest_serializer = TournamentSerializer
     model = models.Tournament
 
 
-class MatchViewSet(GameViewSet):
+class MatchViewSet(BaseContestViewSet):
     """
     View that handles creation and retrieval of matches. A match
-    is a 1v1 game between two players.
+    is a 1v1 contest between two players.
     """
 
     definition_serializer = MatchDefinitionSerializer
     definition_model = models.MatchDefinition
     results_serializer = MatchResultsSerializer
-    game_serializer = MatchSerializer
+    contest_serializer = MatchSerializer
     model = models.Match
 
 
-class MoranViewSet(GameViewSet):
+class MoranViewSet(BaseContestViewSet):
     """
     View that handles the creation and retrieval of Moran
     Processes.
@@ -219,7 +219,7 @@ class MoranViewSet(GameViewSet):
     definition_serializer = MoranDefinitionSerializer
     definition_model = models.MoranDefinition
     results_serializer = MoranResultsSerializer
-    game_serializer = MoranSerializer
+    contest_serializer = MoranSerializer
     model = models.MoranProcess
 
 

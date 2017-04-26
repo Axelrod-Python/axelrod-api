@@ -1,5 +1,3 @@
-import json
-
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
@@ -57,7 +55,7 @@ class TournamentDefinitionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = models.TournamentDefinition
-        fields = ('name', 'created', 'last_updated', 'turns',
+        fields = ('created', 'last_updated', 'turns',
                   'repetitions', 'noise', 'with_morality', 'player_list')
 
 
@@ -113,9 +111,9 @@ class MoranSerializer(serializers.ModelSerializer):
         fields = ('id', 'created', 'last_updated', 'status', 'definition', 'results')
 
 
-class GameResultSerializer:
+class ContestResultSerializer:
     """
-    Serialize the result of an axelrod game into a dictionary by
+    Serialize the result of an axelrod contest into a dictionary by
     iterating over its __dict__ method.
     """
 
@@ -129,7 +127,7 @@ class GameResultSerializer:
         self.data = response_object
 
 
-class MoranResultsSerializer(GameResultSerializer):
+class MoranResultsSerializer(ContestResultSerializer):
 
     handle_locally = [
         'mutation_targets',
@@ -156,7 +154,7 @@ class MoranResultsSerializer(GameResultSerializer):
         return mutation_targets
 
 
-class MatchResultsSerializer(GameResultSerializer):
+class MatchResultsSerializer(ContestResultSerializer):
 
     handle_locally = []
 
@@ -177,7 +175,7 @@ class MatchResultsSerializer(GameResultSerializer):
         self.data['scores'] = result.scores()
 
 
-class TournamentResultsSerializer(GameResultSerializer):
+class TournamentResultsSerializer(ContestResultSerializer):
 
     state_distribution_keys = [
     ]

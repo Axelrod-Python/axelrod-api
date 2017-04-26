@@ -13,7 +13,7 @@ from django.db.models import (
 import axelrod as axl
 
 
-class Game(Model):
+class Contest(Model):
 
     PENDING = 0
     RUNNING = 1
@@ -37,7 +37,7 @@ class Game(Model):
         abstract = True
 
 
-class GameDefinition(Model):
+class ContestDefinition(Model):
     created = DateTimeField(auto_now_add=True, editable=False)
     last_updated = DateTimeField(auto_now=True, editable=False)
     turns = IntegerField()
@@ -48,7 +48,7 @@ class GameDefinition(Model):
         abstract = True
 
 
-class Tournament(Game):
+class Tournament(Contest):
 
     definition = ForeignKey('TournamentDefinition')
 
@@ -67,13 +67,12 @@ class Tournament(Game):
         return results
 
 
-class TournamentDefinition(GameDefinition):
-    name = CharField(max_length=255)
+class TournamentDefinition(ContestDefinition):
     repetitions = IntegerField()
     with_morality = BooleanField()
 
 
-class Match(Game):
+class Match(Contest):
 
     definition = ForeignKey('MatchDefinition')
 
@@ -89,13 +88,13 @@ class Match(Game):
         return match
 
 
-class MatchDefinition(GameDefinition):
+class MatchDefinition(ContestDefinition):
 
     class Meta:
         managed = True
 
 
-class MoranProcess(Game):
+class MoranProcess(Contest):
 
     definition = ForeignKey('MoranDefinition')
 
@@ -113,14 +112,14 @@ class MoranProcess(Game):
         return mp
 
 
-class MoranDefinition(GameDefinition):
+class MoranDefinition(ContestDefinition):
     mode = CharField(max_length=2)
 
 
 class InternalStrategy(Model):
     """
     This model is used to represent strategies in an internal
-    database table. Games reference this in a ManyToMany
+    database table. Contests reference this in a ManyToMany
     to store the strategies in their player_list field. This is
     necessary to facilitate normalization of the database.
     """

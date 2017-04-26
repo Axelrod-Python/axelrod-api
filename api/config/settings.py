@@ -1,13 +1,8 @@
 import os
-import sys
 import dj_database_url
 
-# handle case where we are testing with no .env file
-if 'test' in sys.argv or 'test_coverage' in sys.argv:
-    SECRET_KEY = 'l#-9)38*k9h9yfkcxwii++_m@3jkm%vojnjl^gkzyzmcfr_afo'
-else:
-    SECRET_KEY = os.environ['SECRET_KEY']
-
+# Environment specific settings from environment variables or local .env file
+SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = bool(os.environ.get('DEBUG', False))
 DOCKER = bool(os.environ.get('DOCKER_HOST', False))
 
@@ -125,13 +120,9 @@ STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'api.config.admin.AnonymousExceptDelete',
-    ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'api.config.admin.AnonymousExceptDelete'
+    ]
 }
 
 

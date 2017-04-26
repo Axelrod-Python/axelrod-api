@@ -77,22 +77,19 @@ class TestTournamentDefinitionSerializer(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.valid_post_data = {
-            'name': 'test_tournament',
             'turns': 5,
             'repetitions': 2,
             'noise': 0.1,
             'with_morality': False,
             'player_list': ['test1', 'test2']
         }
-        cls.missing_name = {
+        cls.missing_noise = {
             'turns': 5,
             'repetitions': 2,
-            'noise': 0.1,
             'with_morality': False,
             'player_list': ['test1', 'test2']
         }
         cls.invalid_field_values = {
-            'name': 'test_tournament',
             'turns': 5,
             'repetitions': 2,
             'noise': 0.1,
@@ -111,9 +108,9 @@ class TestTournamentDefinitionSerializer(TestCase):
         self.assertTrue(serializer.is_valid())
 
     def test_is_invalid_with_missing_fields(self):
-        serializer = TournamentDefinitionSerializer(data=self.missing_name)
+        serializer = TournamentDefinitionSerializer(data=self.missing_noise)
         self.assertFalse(serializer.is_valid())
-        self.assertEqual({'name': ['This field is required.']}, serializer.errors)
+        self.assertEqual({'noise': ['This field is required.']}, serializer.errors)
 
     def test_is_invalid_with_incorrect_value(self):
         serializer = TournamentDefinitionSerializer(data=self.invalid_field_values)
