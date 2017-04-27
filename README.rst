@@ -27,6 +27,7 @@ project folder to start the web and database servers:
 
 .. code::
 
+  docker volume create --name=postgres
   docker-compose up
 
 This will take several minutes the first time you run it as it needs to download and install all the necessary
@@ -55,15 +56,13 @@ from there rather than the command line from now on.
 Running Tests
 -------------
 
-Make sure you have created a .env file as above. To run all tests:
-
 .. code::
 
   python manage.py test --settings=api.config.test_settings
 
 With coverage:
 
-.. code:
+.. code::
 
   coverage run --source='api' manage.py test --settings=api.config.test_settings
   coverage html --omit="*/test*"
